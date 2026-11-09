@@ -157,6 +157,15 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
 .bigico .ico{width:64px;height:64px;flex-basis:64px}
 .bigico .ico svg{width:32px;height:32px}
 
+.hd{display:flex;gap:20px;align-items:center;justify-content:space-between}
+.hd .t{flex:1;min-width:0}
+.thumb{flex:0 0 140px;width:140px;height:140px;border-radius:16px;border:1px solid var(--bronze);object-fit:cover;display:block}
+.pic{display:block;width:100%;height:auto;aspect-ratio:16/5;object-fit:cover;border-radius:16px;border:1px solid var(--bronze);margin:16px 0}
+.callout.withpic{display:grid;grid-template-columns:1fr 190px;gap:24px;align-items:center}
+.callout .cimg{width:190px;height:190px;object-fit:cover;border-radius:12px;border:1px solid rgba(212,175,55,.5);display:block}
+@media (max-width:640px){.thumb{flex-basis:84px;width:84px;height:84px;border-radius:12px}.hd{gap:12px}.callout.withpic{grid-template-columns:1fr}.callout .cimg{width:100%;height:150px}}
+.hd{margin-bottom:16px}
+
 </style>
 </head>
 <body>
@@ -165,8 +174,8 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
 <section class="sec" aria-labelledby="h-idea">
   <span class="eyebrow">The big idea</span>
   <h2 id="h-idea">Your AI is only as clear as you are</h2>
+  <img class="pic" src="img/banner-key.jpg" alt="" width="1200" height="500">
   <p class="lead">A prompt is just the instructions you give your AI. Your AI is a brilliant helper, but it can't read your mind, so when the instructions are fuzzy it has to guess, and guessing is how you end up with answers that don't sound like you.</p>
-  <div class="bigico"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span></div>
   <div class="ask">"Help me with my content"</div>
   <div class="bubbles" aria-label="Questions your AI has to guess the answers to">
     <span class="bubble">Which piece?</span>
@@ -186,8 +195,10 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
 </section>
 
 <section class="sec" aria-labelledby="h-get">
+  <div class="hd"><div class="t">
   <span class="eyebrow">Why it's worth it</span>
-  <h2 id="h-get">What you walk away with</h2>
+    <h2 id="h-get">What you walk away with</h2>
+  </div><img class="thumb" src="img/thumb-door.jpg" alt="" width="140" height="140"></div>
   <div class="grid two">
     <div class="tile"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></span><h3>One reusable instruction</h3><p>Copy it, tweak it, and save it for any task you do again and again.</p></div>
     <div class="tile"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 000-7.8z"/></svg></span><h3>A home for your preferences</h3><p>Your favorite ways of doing things and your must-haves get a place to live.</p></div>
@@ -197,8 +208,10 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
 </section>
 
 <section class="sec" aria-labelledby="h-how">
+  <div class="hd"><div class="t">
   <span class="eyebrow">5 easy steps</span>
-  <h2 id="h-how">How to use it</h2>
+    <h2 id="h-how">How to use it</h2>
+  </div><img class="thumb" src="img/thumb-compass.jpg" alt="" width="140" height="140"></div>
   <p>Swipe through the steps, or tap Next.</p>
   <div class="car" role="region" aria-roledescription="carousel" aria-label="How to use it">
     <div class="track" tabindex="0">
@@ -215,6 +228,7 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
 <section class="sec" aria-labelledby="h-seven">
   <span class="eyebrow">Fill in the blanks</span>
   <h2 id="h-seven">The 7 boxes to fill</h2>
+  <img class="pic" src="img/banner-shield.jpg" alt="" width="1200" height="500">
   <div class="car" role="region" aria-roledescription="carousel" aria-label="The 7 boxes to fill">
     <div class="track" tabindex="0">
       <div class="card"><div class="ih"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7c.6.5 1 1.2 1 2V18h6v-1.3c0-.8.4-1.5 1-2A7 7 0 0012 2z"/></svg></span><span class="no">Box 1</span></div><h3>Rough request</h3><p>Your first idea, said the way you'd say it out loud.</p></div>
@@ -227,10 +241,11 @@ pre{margin:0;white-space:pre-wrap;word-wrap:break-word;font:500 12.5px/1.65 "Mon
     </div>
     <div class="ctrl"><button type="button" class="btn secondary" data-prev>Back</button><button type="button" class="btn primary" data-next>Next</button><div class="dots"></div><span class="count" aria-live="polite"></span></div>
   </div>
-  <div class="callout">
+  <div class="callout withpic"><div>
     <span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg></span><span class="eyebrow">Pro tip</span>
     <h3>Less, but specific</h3>
     <p>When it comes to your AI, adding less yet specific info is way better than overloading it with lots of unrelated info. Keep the info specific per project or task you give your AI. Your AI Master Key will hold all the documentation to reference, so keep your info per agent very specific and clear!</p>
+  </div><img class="cimg" src="img/thumb-magnifier.jpg" alt="" width="190" height="190">
   </div>
 </section>
 
@@ -273,8 +288,10 @@ YOUR JOB
 </section>
 
 <section class="sec" aria-labelledby="h-check">
+  <div class="hd"><div class="t">
   <span class="eyebrow">Your turn</span>
-  <h2 id="h-check">Did your ask land?</h2>
+    <h2 id="h-check">Did your ask land?</h2>
+  </div><img class="thumb" src="img/thumb-trophy.jpg" alt="" width="140" height="140"></div>
   <p>Pick one real ask you need to do this week and run it through the steps. Then tap each box that's true for your result.</p>
   <div class="checks">
     <label class="check"><input type="checkbox"><span class="box-ui"><svg viewBox="0 0 24 24" fill="none" stroke="#2c2316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span><span><strong>I got the one thing I asked for</strong><small>Name the result you received.</small></span></label>
@@ -290,6 +307,7 @@ YOUR JOB
 <section class="sec" aria-labelledby="h-fix">
   <span class="eyebrow">If it's not quite right</span>
   <h2 id="h-fix">Spot it &amp; fix it</h2>
+  <img class="pic" src="img/banner-pen.jpg" alt="" width="1200" height="500">
   <div class="pairs">
     <div class="head"><span class="eyebrow">Spot it</span><span></span><span class="eyebrow">Fix it</span></div>
     <div class="pair"><div class="spot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg><span>It sounds generic</span></div><div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div><div class="fix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg><span>Tell it more about who you're writing to, and add one real fact.</span></div></div>
@@ -301,8 +319,10 @@ YOUR JOB
 </section>
 
 <section class="sec" aria-labelledby="h-think">
+  <div class="hd"><div class="t">
   <span class="eyebrow">Reflect</span>
-  <h2 id="h-think">Think it over</h2>
+    <h2 id="h-think">Think it over</h2>
+  </div><img class="thumb" src="img/thumb-candle.jpg" alt="" width="140" height="140"></div>
   <div class="grid three">
     <div class="tile"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01"/></svg></span><p>Where was my AI guessing?</p></div>
     <div class="tile"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg></span><p>Which detail helped the most?</p></div>
