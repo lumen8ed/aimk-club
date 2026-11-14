@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build Your AI File Organizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;0,600;0,700;1,500&family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{--white:#ffffff;--ivory:#f8f6f2;--linen:#f5f0e6;--metal:#d4af37;--bronze:#c8a34b;--antique:#9c7b34;--gold:#b28900;--choc:#6c4d2d;--espresso:#2c2316;--forest:#1e4120;--black:#000800}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--ivory)}
+body{color:var(--black);font:500 15px/1.65 "Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px 32px}
+h1,h2,h3{font-family:"Playfair Display",Georgia,serif;font-weight:500;letter-spacing:-.01em;margin:0}
+h2{font-size:clamp(26px,4.4vw,34px);line-height:1.15;color:var(--gold);margin:6px 0 12px}
+h3{font-size:19px;line-height:1.25;color:var(--espresso);margin:0 0 6px}
+.eyebrow{display:block;font:600 11px/1.4 "Montserrat",sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--forest)}
+.sec{margin-top:52px}
+.sec:first-child{margin-top:0}
+.sec p{margin:0 0 12px}
+.lead{font-size:16.5px;max-width:640px}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:block}
+
+/* buttons */
+.btn{display:inline-block;font:600 12px/1.2 "Montserrat",sans-serif;letter-spacing:.2em;text-transform:uppercase;border-radius:8px;padding:12px 28px;cursor:pointer;border:1px solid transparent;text-decoration:none}
+.btn.primary{background:var(--metal);color:var(--espresso)}
+.btn.primary:hover{background:var(--bronze)}
+.btn.secondary{background:var(--linen);border-color:var(--bronze);color:var(--antique)}
+.btn.secondary:hover{background:var(--white)}
+.btn[aria-disabled="true"]{opacity:.45;cursor:default}
+.btn:focus-visible,.dot:focus-visible,.pick:focus-visible,input:focus-visible,.track:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+
+/* notes and callouts */
+.note{background:var(--linen);border-left:3px solid var(--forest);border-radius:0 12px 12px 0;padding:14px 18px;margin:16px 0 0;font-size:14px}
+.note p{margin:0}
+.callout{background:var(--espresso);color:var(--ivory);border-radius:16px;padding:22px 26px;margin-top:18px}
+.callout .eyebrow{color:var(--metal);margin-bottom:4px}
+.callout h3{color:var(--ivory);font-size:22px}
+.callout p{margin:8px 0 0;font-size:14.5px}
+.callout .fi{color:var(--metal);width:34px;height:34px;margin-bottom:10px}
+.callout .fi svg{width:34px;height:34px}
+
+/* carousel */
+.car{margin-top:14px}
+.track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 2px 12px;margin:0 -2px;scrollbar-width:none;-webkit-overflow-scrolling:touch;align-items:stretch}
+.track::-webkit-scrollbar{display:none}
+.card{flex:0 0 min(340px,80%);scroll-snap-align:start;background:var(--white);border:1px solid var(--bronze);border-radius:16px;padding:20px 20px 18px;box-shadow:0 2px 0 var(--linen);display:flex;flex-direction:column}
+.card p{margin:0 0 10px;font-size:14.5px}
+.card p:last-child{margin-bottom:0}
+.track.wide .card{flex-basis:min(400px,84%)}
+.ih{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.ih .no{font:600 11px/1.4 "Montserrat",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--antique)}
+.ico{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:var(--espresso);color:var(--metal);flex:0 0 48px}
+.ico svg{width:24px;height:24px}
+.ctrl{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+.dots{display:flex;gap:8px;align-items:center;margin:0 6px}
+.dot{width:10px;height:10px;border-radius:50%;border:1px solid var(--bronze);background:var(--linen);padding:0;cursor:pointer}
+.dot.on{background:var(--metal);border-color:var(--metal)}
+.count{font:600 12px/1 "Montserrat",sans-serif;letter-spacing:.12em;color:var(--antique);margin-left:auto}
+
+/* tiles */
+.grid{display:grid;gap:12px}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.tile{background:var(--white);border:1px solid var(--bronze);border-radius:16px;padding:18px 20px}
+.tile p{margin:0;font-size:14.5px}
+.tile .ico{margin-bottom:10px}
+.tile .no{display:block;font:600 11px/1.4 "Montserrat",sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--antique);margin-bottom:4px}
+.tile.sure{background:var(--linen);border-style:dashed}
+
+/* flow */
+.flow{display:grid;grid-template-columns:1fr 34px 1fr 34px 1fr;align-items:stretch;gap:0;margin-top:18px}
+.flow .step{border-radius:16px;padding:18px 16px;border:1px solid var(--bronze);background:var(--linen)}
+.flow .step.mid{background:var(--metal);border-color:var(--metal);color:var(--espresso)}
+.flow .step.end{background:var(--espresso);border-color:var(--espresso);color:var(--ivory)}
+.flow .step b{display:block;font:600 14.5px/1.35 "Montserrat",sans-serif;margin-bottom:6px}
+.flow .step span.t{font-size:13.5px;line-height:1.5;display:block}
+.flow .fi{display:block;width:30px;height:30px;margin-bottom:8px;color:var(--antique)}
+.flow .fi svg{width:30px;height:30px}
+.flow .mid .fi{color:var(--espresso)}
+.flow .end .fi{color:var(--metal)}
+.arrow{display:flex;align-items:center;justify-content:center;color:var(--bronze)}
+.arrow svg{width:22px;height:22px}
+
+/* form panel */
+.panel{background:var(--linen);border:1px solid var(--bronze);border-radius:16px;padding:20px 22px;margin:16px 0}
+.panel .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.panel label{display:block;font:600 12px/1.4 "Montserrat",sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--antique);margin-bottom:6px}
+.panel input[type=text]{width:100%;font:500 15px "Montserrat",sans-serif;color:var(--black);background:var(--white);border:1px solid var(--bronze);border-radius:8px;padding:11px 12px}
+.panel small{display:block;font-size:12.5px;color:var(--choc);margin-top:4px}
+.seg{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.status{font:600 12px/1.4 "Montserrat",sans-serif;letter-spacing:.08em;color:var(--antique)}
+.status.ok{color:var(--forest)}
+.box .status{color:var(--bronze)}
+.box .status.ok{color:var(--metal)}
+
+/* prompt box */
+.box{background:var(--espresso);color:var(--ivory);border-radius:16px;padding:20px 22px;margin-top:12px}
+.box .bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.box .bar .eyebrow{color:var(--metal)}
+pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:500 12.5px/1.65 "Montserrat",sans-serif;color:var(--ivory)}
+.mini{background:var(--linen);border-radius:12px;padding:12px 14px;margin:0 0 14px;flex:1}
+.mini pre{color:var(--espresso);font-size:12px}
+.card .path{font:600 10.5px/1.4 "Montserrat",sans-serif;letter-spacing:.08em;color:var(--antique);margin-bottom:10px;overflow-wrap:anywhere}
+.card .btn{align-self:flex-start;margin-top:auto}
+
+/* thumbs and header */
+.hd{display:flex;gap:20px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.hd .t{flex:1;min-width:0}
+.thumb{flex:0 0 140px;width:140px;height:140px;border-radius:16px;border:1px solid var(--bronze);object-fit:cover;display:block;background:var(--linen)}
+
+/* reminders list */
+.rem{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.rem li{display:flex;align-items:center;gap:12px;font:600 15px/1.4 "Montserrat",sans-serif}
+.rem svg{width:22px;height:22px;flex:0 0 22px;color:var(--metal)}
+
+@media (max-width:640px){
+ .wrap{padding:22px 16px 28px}
+ .card{flex-basis:84%}
+ .track.wide .card{flex-basis:88%}
+ .grid.three{grid-template-columns:1fr}
+ .flow{grid-template-columns:1fr;gap:0}
+ .flow .arrow{height:30px}
+ .flow .arrow svg{transform:rotate(90deg)}
+ .panel .row{grid-template-columns:1fr}
+ .count{margin-left:0}
+ .thumb{flex-basis:84px;width:84px;height:84px;border-radius:12px}
+ .hd{gap:12px}
+}
+@media (prefers-reduced-motion:reduce){.track{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+ <defs>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V5"/><circle cx="12" cy="4" r="1"/><circle cx="9.3" cy="13" r="1" fill="currentColor"/><circle cx="14.7" cy="13" r="1" fill="currentColor"/><path d="M3 12.5v3M21 12.5v3"/></symbol>
+  <symbol id="i-boxes" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.6 2.2c-.7.4-1.1.9-1.1 1.8"/><path d="M12 17h.01"/></symbol>
+  <symbol id="i-report" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.4"/><path d="M17.5 14.2c2.3.4 3.5 2.3 3.5 5.8"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/><path d="M19 3v4M17 5h4"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+ </defs>
+</svg>
+
+<main class="wrap">
+
+<!-- THE BIG IDEA -->
+<section class="sec" aria-labelledby="h-idea">
+  <span class="eyebrow">The big idea</span>
+  <h2 id="h-idea">A Robot With 5 Labeled Boxes</h2>
+  <p class="lead">Think of your AI Agent as a little robot with 5 labeled boxes. It sorts your messy files into those boxes, and it never throws anything away.</p>
+  <div class="flow">
+    <div class="step"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-upload"/></svg></span><b>Your messy files</b><span class="t">Hand them to the robot.</span></div>
+    <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></div>
+    <div class="step mid"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-bot"/></svg></span><b>Your robot</b><span class="t">Reads each file and picks a box.</span></div>
+    <div class="arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow"/></svg></div>
+    <div class="step end"><span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-boxes"/></svg></span><b>Your 5 boxes</b><span class="t">Every file ends up with a home.</span></div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="sec" aria-labelledby="h-how">
+  <span class="eyebrow">How it works</span>
+  <h2 id="h-how">4 Simple Steps</h2>
+  <div class="car" data-car>
+    <div class="track" tabindex="0" aria-label="How it works, 4 cards">
+      <div class="card"><div class="ih"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg></span><span class="no">Step 1</span></div><h3>Hand It Over</h3><p>Give the robot the files you want sorted.</p></div>
+      <div class="card"><div class="ih"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-boxes"/></svg></span><span class="no">Step 2</span></div><h3>Watch It Sort</h3><p>The robot puts each file into one of your five boxes.</p></div>
+      <div class="card"><div class="ih"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></span><span class="no">Step 3</span></div><h3>Check the Odd Ones</h3><p>When the robot is unsure where a file goes, it uses the unsure box so you can take a look yourself.</p></div>
+      <div class="card"><div class="ih"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-report"/></svg></span><span class="no">Step 4</span></div><h3>Read the Report</h3><p>The robot tells you what happened and gives you one next step.</p></div>
+    </div>
+    <div class="ctrl"><button type="button" class="btn secondary" data-prev>Back</button><button type="button" class="btn primary" data-next>Next</button><span class="dots" role="tablist" aria-label="Choose a card"></span><span class="count" aria-live="polite"></span></div>
+  </div>
+</section>
+
+<!-- THE 5 BOXES -->
+<section class="sec" aria-labelledby="h-boxes">
+  <div class="hd"><div class="t">
+    <span class="eyebrow">Your 5 boxes</span>
+    <h2 id="h-boxes">Every File Gets a Home</h2>
+  </div><img class="thumb" src="img/thumb-door.jpg" alt="" width="140" height="140" onerror="this.style.visibility='hidden'"></div>
+  <div class="grid three">
+    <div class="tile"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-book"/></svg></span><span class="no">Box 1</span><h3>01-for-rag</h3><p>Lessons, courses, and books.</p></div>
+    <div class="tile"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-users"/></svg></span><span class="no">Box 2</span><h3>02-for-clients</h3><p>Your client files.</p></div>
+    <div class="tile"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-spark"/></svg></span><span class="no">Box 3</span><h3>03-for-brand</h3><p>Your brand files.</p></div>
+    <div class="tile"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-star"/></svg></span><span class="no">Box 4</span><h3>04-for-examples</h3><p>Examples of your work.</p></div>
+    <div class="tile sure"><span class="ico"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></span><span class="no">Box 5</span><h3>05-random-unsure</h3><p>Anything you are unsure about.</p></div>
+  </div>
+  <div class="note"><p>All 5 boxes live inside one folder called 03-file-depository.</p></div>
+</section>
+
+<!-- SET UP THE AGENT -->
+<section class="sec" aria-labelledby="h-agent">
+  <div class="hd"><div class="t">
+    <span class="eyebrow">Get your AI Agent</span>
+    <h2 id="h-agent">Fill In & Copy Your Agent</h2>
+  </div><img class="thumb" src="img/thumb-compass.jpg" alt="" width="140" height="140" onerror="this.style.visibility='hidden'"></div>
+  <p class="lead">Type your name and your AI Master Key link once, and the copy button fills them in for you.</p>
+  <div class="panel">
+    <label for="pGpt" style="margin-bottom:0">Where will you use your agent?</label>
+    <div class="seg" role="group" aria-label="Choose your AI tool">
+      <button type="button" class="btn primary" id="pGpt" aria-pressed="true">ChatGPT</button>
+      <button type="button" class="btn secondary" id="pCl" aria-pressed="false">Claude</button>
+    </div>
+    <div class="row">
+      <div><label for="fOwner">Your name</label><input type="text" id="fOwner" autocomplete="off" placeholder="Anri Olivier"><small>Goes in the OWNER line.</small></div>
+      <div><label for="fLink">Your AI Master Key link</label><input type="text" id="fLink" autocomplete="off" placeholder="https://drive.google.com/drive/folders/..."><small>The Google Drive link to your Key folder.</small></div>
+    </div>
+  </div>
+  <p>Copy the instructions into your <span id="pname">ChatGPT Project</span>.</p>
+  <div class="box">
+    <div class="bar"><span class="eyebrow">Your AI Agent</span><button type="button" class="btn primary" data-copy="agent">Copy My AI Agent</button></div>
+    <p class="status" id="agentStatus" role="status" style="margin:0 0 12px"></p>
+    <pre id="agentPre"></pre>
+  </div>
+  <div class="note"><p>This is the safe version of the agent, so it only ever places files inside 03-file-depository.</p></div>
+</section>
+
+<!-- README FILES -->
+<section class="sec" aria-labelledby="h-readme">
+  <span class="eyebrow">Get your README files</span>
+  <h2 id="h-readme">Labels for Your Boxes</h2>
+  <p class="lead">Each README tells your robot what belongs in a folder. Your robot creates them if they are missing, so copy one here only if you want to add it yourself.</p>
+  <div class="car" data-car>
+    <div class="track wide" tabindex="0" aria-label="README files, 6 cards" id="readmeTrack"></div>
+    <div class="ctrl"><button type="button" class="btn secondary" data-prev>Back</button><button type="button" class="btn primary" data-next>Next</button><span class="dots" role="tablist" aria-label="Choose a card"></span><span class="count" aria-live="polite"></span></div>
+  </div>
+  <div class="note"><p>The agent follows your existing Key's README style and permissions, and it never overwrites a README that already exists.</p></div>
+</section>
+
+<!-- FIRST MISSION -->
+<section class="sec" aria-labelledby="h-mission">
+  <div class="hd"><div class="t">
+    <span class="eyebrow">Your first mission</span>
+    <h2 id="h-mission">Ask Your Robot to Look</h2>
+  </div><img class="thumb" src="img/thumb-magnifier.jpg" alt="" width="140" height="140" onerror="this.style.visibility='hidden'"></div>
+  <p class="lead">Ask your robot to check your files and show you a plan before it moves anything.</p>
+  <div class="box">
+    <div class="bar"><span class="eyebrow">Your first mission</span><button type="button" class="btn primary" data-copy="mission">Copy My First Mission</button></div>
+    <pre id="missionPre"></pre>
+  </div>
+  <div class="note"><p>The robot needs access to your files, or an upload, before it can look at them.</p></div>
+</section>
+
+<!-- YOU DID IT -->
+<section class="sec" aria-labelledby="h-done">
+  <div class="callout">
+    <span class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-spark"/></svg></span>
+    <span class="eyebrow">You did it</span>
+    <h3 id="h-done">Small Steps Count!</h3>
+    <ul class="rem">
+      <li><svg class="i" aria-hidden="true"><use href="#i-boxes"/></svg>Sort first.</li>
+      <li><svg class="i" aria-hidden="true"><use href="#i-help"/></svg>Check anything unsure.</li>
+      <li><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>Never delete.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<script>
+const AGENT = `# AI Placement Agent
+
+You are my AI File Organizer.
+
+Talk in very short sentences.
+Give me one action at a time.
+
+OWNER: [OWNER]
+AI MASTER KEY: [GOOGLE DRIVE FOLDER LINK]
+
+YOUR JOB
+Sort approved incoming files into 03-file-depository.
+
+BEFORE CHANGING FILES
+- Check that you can access the correct AI Master Key.
+- Open the AI Master Key and read these in full: AGENTS.md, 00-start-here/00-start-here.md, 00-start-here/04-index.md, 00-start-here/07-authority-rules.md, 00-start-here/13-content-permissions.md, and every record in 01-core-source-of-truth/07-guardrails/. A guardrail is a rule only once it holds content the owner has confirmed.
+- Read existing README.md files.
+- If any required rule cannot be read, say exactly which one and stop.
+- Don't run the full AI Master Key interview.
+
+FOLDERS
+03-file-depository/
+  01-for-rag/
+  02-for-clients/
+  03-for-brand/
+  04-for-examples/
+  05-random-unsure/
+
+Create missing folders and README files only after checking for existing ones.
+Never overwrite an existing README.
+
+SORTING RULES
+- Learning materials: 01-for-rag
+- Client files: 02-for-clients
+- Brand files: 03-for-brand
+- Work examples: 04-for-examples
+- Uncertain files: 05-random-unsure
+
+SAFETY RULES
+- Keep files inside 03-file-depository for now.
+- Never move files into final Key destinations without separate approval.
+- Never delete, overwrite, or rewrite originals.
+- Copy outside files into the depository; keep originals.
+- Preserve folders and their contents.
+- Only use verified Drive operations.
+- Never claim a move or copy worked without checking.
+- Never treat matching filenames alone as proof of duplicates.
+- Put uncertain items and possible duplicates aside for review.
+- Respect the Key's permissions.
+- If anything fails, report the exact problem.
+- Ask before carrying out the first test.
+
+FUTURE DESTINATIONS (NOT AUTHORIZED YET)
+Clients: 02-context-intelligence/02-audience
+Brand: 02-context-intelligence/01-identity
+Examples: 02-context-intelligence/04-approach
+RAG: [CONFIRMED RAG LIBRARY PATH]
+
+AFTER EACH RUN
+Tell me:
+✅ Sorted
+❓ Needs review
+⚠️ Problems
+Give only one next step.`;
+
+const READMES = [
+ ["Depository","File Depository","03-file-depository/README.md","i-folder",
+`# File Depository
+Purpose: Hold incoming files safely.
+Read all subfolder README files before sorting.
+Do not send files to final destinations yet.
+Never delete, overwrite, or trash files.`],
+ ["Box 1","Learning Materials","01-for-rag/README.md","i-book",
+`# Learning Materials
+Put courses, books, transcripts, and lessons here.
+Future destination: confirmed RAG library.
+Keep originals unchanged.
+Never delete or trash files.`],
+ ["Box 2","Client Files","02-for-clients/README.md","i-users",
+`# Client Files
+Put client-related information here.
+Future destination: 02-context-intelligence/02-audience.
+Do not move there yet.
+Never delete or trash files.`],
+ ["Box 3","Brand Files","03-for-brand/README.md","i-spark",
+`# Brand Files
+Put brand identity, voice, and style files here.
+Future destination: 02-context-intelligence/01-identity.
+Do not move there yet.
+Never delete or trash files.`],
+ ["Box 4","Work Examples","04-for-examples/README.md","i-star",
+`# Work Examples
+Put examples of your work here.
+Future destination: 02-context-intelligence/04-approach.
+Do not move there yet.
+Never delete or trash files.`],
+ ["Box 5","Unsure Files","05-random-unsure/README.md","i-help",
+`# Unsure Files
+Put anything unclear here.
+Don't guess.
+Ask the owner to review.
+Never delete or trash files.`]
+];
+
+const MISSION = "Check my Downloads folder. Show me where each file should go inside 03-file-depository. Do not move anything until I approve.";
+
+const $ = id => document.getElementById(id);
+const state = {p:'chatgpt', owner:'', link:''};
+
+function fill(t){
+  const map = {'OWNER':state.owner,'GOOGLE DRIVE FOLDER LINK':state.link};
+  return t.replace(/\[([A-Z ]+)\]/g,(m,k)=> (map[k] && map[k].trim()) ? map[k].trim() : m);
+}
+const agentText = () => fill(AGENT);
+
+function renderAgent(){
+  $('pGpt').setAttribute('aria-pressed', state.p==='chatgpt');
+  $('pCl').setAttribute('aria-pressed', state.p==='claude');
+  $('pGpt').className = 'btn ' + (state.p==='chatgpt' ? 'primary' : 'secondary');
+  $('pCl').className = 'btn ' + (state.p==='claude' ? 'primary' : 'secondary');
+  $('pname').textContent = state.p==='chatgpt' ? 'ChatGPT Project' : 'Claude Project';
+  $('agentPre').textContent = agentText();
+  const miss = [];
+  if(!state.owner.trim()) miss.push('your name');
+  if(!state.link.trim()) miss.push('your Key link');
+  const st = $('agentStatus');
+  st.className = 'status' + (miss.length ? '' : ' ok');
+  st.textContent = miss.length ? 'Still blank above: ' + miss.join(' and ') : 'Your blanks are filled in.';
+}
+
+async function doCopy(text, btn, pre){
+  const old = btn.textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; }
+  catch(e){
+    try {
+      const a = document.createElement('textarea'); a.value = text; a.setAttribute('readonly',''); a.style.cssText='position:fixed;opacity:0';
+      document.body.appendChild(a); a.select(); ok = document.execCommand('copy'); a.remove();
+    } catch(e2){ ok = false; }
+  }
+  if(ok){ btn.textContent = 'Copied'; }
+  else {
+    btn.textContent = 'Press Ctrl+C or Cmd+C';
+    if(pre){ const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  }
+  setTimeout(()=>{ btn.textContent = old; }, 2400);
+}
+
+/* README cards */
+(function(){
+  const track = $('readmeTrack');
+  READMES.forEach(r => {
+    const c = document.createElement('div'); c.className = 'card';
+    c.innerHTML = '<div class="ih"><span class="ico"><svg class="i" aria-hidden="true"><use href="#'+r[3]+'"/></svg></span><span class="no"></span></div><h3></h3><p class="path"></p><div class="mini"><pre></pre></div><button type="button" class="btn secondary">Copy README</button>';
+    c.querySelector('.no').textContent = r[0];
+    c.querySelector('h3').textContent = r[1];
+    c.querySelector('.path').textContent = r[2];
+    const pre = c.querySelector('pre'); pre.textContent = r[4];
+    const b = c.querySelector('button'); b.onclick = () => doCopy(r[4], b, pre);
+    track.appendChild(c);
+  });
+})();
+
+/* swipe card rows */
+document.querySelectorAll('[data-car]').forEach(car => {
+  const track = car.querySelector('.track'), cards = [...track.children];
+  const prev = car.querySelector('[data-prev]'), next = car.querySelector('[data-next]');
+  const dotsEl = car.querySelector('.dots'), count = car.querySelector('.count');
+  const dots = cards.map((c,i) => { const d = document.createElement('button'); d.type='button'; d.className='dot'; d.setAttribute('aria-label','Go to card '+(i+1)); d.onclick = () => go(i); dotsEl.appendChild(d); return d; });
+  function idx(){ const gap = 14; const w = cards[0].offsetWidth + gap; return Math.max(0, Math.min(cards.length-1, Math.round(track.scrollLeft / w))); }
+  let forced=null;
+  function go(i){ forced=i; track.scrollTo({left: cards[i].offsetLeft - cards[0].offsetLeft, behavior:'smooth'}); }
+  function curIdx(){ const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4; return forced!==null && atEnd ? forced : (atEnd ? cards.length-1 : idx()); }
+  function sync(){
+    const i = idx(); const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+    const cur = (forced!==null && Math.abs(i-forced)<=cards.length) && atEnd ? forced : (atEnd ? cards.length-1 : i);
+    dots.forEach((d,k)=>d.classList.toggle('on', k===cur));
+    count.textContent = (cur+1) + ' of ' + cards.length;
+    prev.setAttribute('aria-disabled', cur===0); next.setAttribute('aria-disabled', cur===cards.length-1);
+  }
+  ['pointerdown','wheel','touchstart'].forEach(ev=>track.addEventListener(ev,()=>{forced=null;},{passive:true}));
+  prev.onclick = () => go(Math.max(0, curIdx()-1));
+  next.onclick = () => go(Math.min(cards.length-1, curIdx()+1));
+  track.addEventListener('scroll', () => requestAnimationFrame(sync));
+  window.addEventListener('resize', sync);
+  sync();
+});
+
+/* wiring */
+$('pGpt').onclick = () => { state.p='chatgpt'; renderAgent(); };
+$('pCl').onclick = () => { state.p='claude'; renderAgent(); };
+$('fOwner').addEventListener('input', e => { state.owner = e.target.value; renderAgent(); });
+$('fLink').addEventListener('input', e => { state.link = e.target.value; renderAgent(); });
+document.querySelector('[data-copy=agent]').onclick = e => doCopy(agentText(), e.currentTarget, $('agentPre'));
+document.querySelector('[data-copy=mission]').onclick = e => doCopy(MISSION, e.currentTarget, $('missionPre'));
+$('missionPre').textContent = MISSION;
+renderAgent();
+</script>
+</body>
+</html>
