@@ -81,7 +81,6 @@
     access: { me: 'just me', assistant: 'me and my assistant', team: 'my team' },
     firstFind: { person: 'a person\'s name', topic: 'the topic', date: 'the date', type: 'the kind of file', event: 'the event or program', click: 'clicking through folders', unsure: 'cannot remember' },
     goTo: { click: 'mostly clicks through folders', search: 'mostly types in a search box', both: 'does both' },
-    related: { yes: 'wants everything connected to a term to show up together, even from different folders', folder: 'wants results from the folder they are in', unsure: 'is not sure yet' },
     dateFreq: { often: 'often', sometimes: 'sometimes', rarely: 'rarely', never: 'never' },
     length: { right: 'about right', 'long': 'too long', 'short': 'too short' },
     order: { front: 'date first', end: 'date at the end', none: 'no date' }

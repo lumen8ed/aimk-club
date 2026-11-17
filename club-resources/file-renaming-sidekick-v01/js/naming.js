@@ -137,14 +137,44 @@
   }
   var JUNK = /\b(new|latest|old|untitled|wip|draft|final|copy)\b/g;
 
+
+  /* Old names often look like "Martha Beck -Five Paths To Your Purpose.pdf", from before the -- style. */
+  var STOP = { the: 1, a: 1, an: 1, of: 1, and: 1, 'for': 1, to: 1, 'with': 1, 'in': 1, on: 1, my: 1, your: 1, how: 1, why: 1, what: 1, from: 1, 'is': 1, 'are': 1, you: 1, 'at': 1, by: 1 };
+  function knownWord(seg) {
+    var tk = ' ' + String(seg).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() + ' ';
+    var all = D.ALL_TOPICS.slice();
+    D.TYPES.forEach(function (t) { t.kw.forEach(function (k) { all.push(k); }); all.push(t.key); });
+    return all.some(function (k) { return tk.indexOf(' ' + k.replace(/-/g, ' ') + ' ') > -1; });
+  }
+  function personLike(seg) {
+    var w = String(seg).trim().split(/\s+/);
+    if (w.length < 2 || w.length > 4) return false;
+    if (knownWord(seg)) return false;
+    return w.every(function (x) { return /^[A-Z][A-Za-z'.\-]*$/.test(x) && !STOP[x.toLowerCase()]; });
+  }
+  function splitAuthor(stem) {
+    var t = String(stem).replace(/_/g, ' ');
+    if (t.indexOf('--') > -1) return null;
+    var segs = t.split(/\s+[-–—]+\s*|\s*[-–—]+\s+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    if (segs.length !== 2) return null;
+    var p1 = personLike(segs[0]), p2 = personLike(segs[1]);
+    if (p1 && !p2) return { author: segs[0], title: segs[1] };
+    if (!p1 && p2) return { author: segs[1], title: segs[0] };
+    if (p1 && p2) return { ambiguous: true };
+    return null;
+  }
+
   function parseOld(raw, S, ov) {
     ov = ov || {};
     var s = String(raw || '').trim();
     if (!s) return null;
     var m = s.match(/^(.*?)(?:\.([A-Za-z0-9]{1,5}))?$/);
     var stem = m[1], ext = (m[2] || '').toLowerCase();
-    var work = stem.toLowerCase().replace(/_/g, ' ');
     var flags = [], need = [], mm;
+    var sp = splitAuthor(stem), author = null, authorSpotted = false;
+    if (sp && sp.author) { author = sp.author; authorSpotted = true; stem = sp.title; flags.push('author spotted: ' + sp.author); }
+    else if (sp && sp.ambiguous) flags.push('which part is the author?');
+    var work = stem.toLowerCase().replace(/_/g, ' ');
 
     var date = null;
     if ((mm = work.match(/(\d{4})[-.\/ ](\d{1,2})[-.\/ ](\d{1,2})/))) {
@@ -217,46 +247,42 @@
     var place = key ? datePlace(S, key) : (S.order === 'none' ? 'none' : S.order);
     if (!date && place !== 'none' && key) need.push('date');
 
-    var item = { key: key || 'guide', source: source, needSource: needSource, topic: topic, title: title, date: date, needDate: !date && place !== 'none', version: ver, final: fin, copy: copy };
+    var item = { key: key || 'guide', author: author, source: source, needSource: needSource, topic: topic, title: title, date: date, needDate: !date && place !== 'none', version: ver, final: fin, copy: copy };
     var parts = buildParts(S, item);
     if (!key) {
       parts = parts.map(function (p) { return p.k === 'type' ? { k: 'type', t: 'type', q: true } : p; });
     }
-    return { raw: s, ext: ext, key: key, flags: flags, need: need, item: item, parts: parts, name: partsToName(parts, ext) };
+    return { raw: s, ext: ext, key: key, authorSpotted: authorSpotted, author: author, flags: flags, need: need, item: item, parts: parts, name: partsToName(parts, ext) };
   }
 
-  function searchHits(name, input) {
-    var toks = name.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  var GENERIC = { author: 'author', name: 'author', writer: 'author', title: 'title', date: 'date', type: 'type', kind: 'type' };
+  function typeHint(w) {
+    for (var i = 0; i < D.TYPES.length; i++) {
+      var t = D.TYPES[i];
+      if (t.key === w || t.kw.some(function (k) { return k.replace(/-/g, '') === w.replace(/-/g, ''); })) return t.key;
+    }
+    return null;
+  }
+  /* r is a parseOld result. Words like author, name, ebook describe a piece of the name rather than appear in it. */
+  function searchHits(r, input) {
+    var name = r.name, toks = name.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
     var lower = name.toLowerCase();
     var words = String(input || '').toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 1; });
-    return words.map(function (w) { return { w: w, hit: toks.indexOf(w) > -1 || (w.length > 3 && lower.indexOf(w) > -1) }; });
-  }
-
-  /* ---- Rename-log gate for overnight mode ---- */
-  function parseLog(text) {
-    var renamed = 0, first = null, last = null;
-    String(text || '').split(/\r?\n/).forEach(function (line) {
-      if (line.charAt(0) !== '|' && line.replace(/^\s+/, '').charAt(0) !== '|') return;
-      var cells = line.split('|').map(function (c) { return c.trim(); });
-      var dm = null, status = false;
-      cells.forEach(function (c) {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(c) && !dm) dm = c;
-        if (/^renamed$/i.test(c)) status = true;
-      });
-      if (dm && status) {
-        renamed++;
-        var t = Date.UTC(+dm.slice(0, 4), +dm.slice(5, 7) - 1, +dm.slice(8, 10));
-        if (first === null || t < first) first = t;
-        if (last === null || t > last) last = t;
+    return words.map(function (w) {
+      var hit = toks.indexOf(w) > -1 || (w.length > 3 && lower.indexOf(w) > -1);
+      if (!hit && GENERIC[w]) {
+        var g1 = GENERIC[w];
+        hit = (g1 === 'author' && !!r.author) || (g1 === 'title') || (g1 === 'date' && !!r.item.date) || (g1 === 'type' && !!r.key);
+        if (!hit && g1 === 'author') return { w: w, hit: false, noAuthor: true };
       }
+      var th = hit ? null : typeHint(w);
+      return th ? { w: w, hit: false, typeKey: th } : { w: w, hit: hit };
     });
-    var days = (first !== null) ? Math.floor((last - first) / 86400000) : 0;
-    return { renamed: renamed, days: days, unlocked: renamed >= 100 && days >= 7 };
   }
 
   g.Naming = {
     slug: slug, pad: pad, validateWord: validateWord, typeWord: typeWord, sourceList: sourceList, datePlace: datePlace,
     buildParts: buildParts, partsToName: partsToName, anriParts: anriParts, sampleItem: sampleItem,
-    patternString: patternString, parseOld: parseOld, searchHits: searchHits, parseLog: parseLog, titleOut: titleOut
+    patternString: patternString, parseOld: parseOld, searchHits: searchHits, titleOut: titleOut
   };
 })(typeof globalThis !== 'undefined' ? globalThis : window);

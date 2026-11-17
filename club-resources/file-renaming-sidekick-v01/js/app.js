@@ -3,7 +3,7 @@
   'use strict';
   var D = window.RenData, N = window.Naming, P = window.Pkg, L = D.LABEL;
   var STORE = 'ren-sidekick-v1';
-  var S = null, PKG = [], DL = null, DLChecked = false, resetArmed = false, gateCache = null;
+  var S = null, PKG = [], DL = null, DLChecked = false, resetArmed = false;
 
   /* ---------- state ---------- */
   function fresh() {
@@ -12,12 +12,12 @@
     return {
       screen: 0, ai: 'claude', where: 'drive', folder: '', logDefault: true, logLoc: '', person: '', business: '',
       del: 'no', delNames: D.DELETE_NAMES.slice(), access: 'me',
-      firstFind: '', goTo: '', related: '', dateFreq: '',
+      firstFind: '', goTo: '', dateFreq: '',
       pieces: { date: true, topic: true, detail: true }, length: 'right', order: 'front', orderTouched: false,
       types: types, recSources: ['zoom'], recOther: '', topics: [], customTopic: '', missing: '',
       dateOverride: {}, city: 'no', final: 'yes', labType: '',
       testNames: ['', '', ''], testOv: [{}, {}, {}], testSearch: ['', '', ''], testOk: ['', '', ''],
-      practice: '', logPaste: '', logResult: null
+      practice: ''
     };
   }
   function merge(o) {
@@ -144,7 +144,8 @@
     return '<p class="sub" style="margin-top:18px">My job is to give your files better names. That\'s it. I won\'t move them, rewrite what\'s inside them, or delete anything without your permission.</p>' +
       q(6, 'Want an optional trash helper?', 'Sometimes we save a file just to get it out of the way, knowing full well it belongs in the bin. Should I recognize files you deliberately named for the trash and offer to trash them?', grp([
         radio('del', 'no', 'Nope. Renaming only, please. (Recommended)'),
-        radio('del', 'yes', 'Yes, but always ask me before trashing anything.')])) +
+        radio('del', 'yes', 'Yes, but only if I add the word delete, delete1, delete-1 or a version like this to the name.')])) +
+      '<div class="note">Either way, I always ask before trashing anything.</div>' +
       (S.del === 'yes' ? q(7, 'Which file names should I treat as "bin me"?', 'Handy when you mark more than one file in a folder, since two files cannot share a name.',
         grp(D.DELETE_NAMES.map(function (n) { return checkArr('delNames', n, '<span class="mono">' + n + '</span>'); }), true) +
         '<div class="note">A file only counts when its <b>whole name</b> is one of these. The word delete inside a longer title never counts. I always ask first, and I use the trash, never permanent deletion.</div>') : '') +
@@ -180,13 +181,11 @@
         checkBool('pieces.detail', 'Extra label', 'extraction. Also covers an author when a document names one.') + '</div>' +
         '<p class="sub-q">Does it feel too long?</p>' + grp([radio('length', 'right', 'About right'), radio('length', 'long', 'Too long', 'I\'ll shorten long titles to their key words and show you the full title.'), radio('length', 'short', 'Too short')])) +
       q(12, 'Which order feels more like you?', null, '<div class="opts">' + orders + '</div>') +
-      q(13, 'When you look up a term, whether it is a client, a resource or a date, should everything connected to it show up, even from different folders?', null, grp([
-        radio('related', 'yes', 'Yes, show me everything'), radio('related', 'folder', 'Only what is in the folder I am in'), radio('related', 'unsure', 'Not sure yet')])) +
-      q(14, 'How often do you search by date?', null, grp([
+      q(13, 'How often do you search by date?', null, grp([
         radio('dateFreq', 'often', 'Often'), radio('dateFreq', 'sometimes', 'Sometimes'), radio('dateFreq', 'rarely', 'Rarely'), radio('dateFreq', 'never', 'Never')], true));
   }
   function c4() {
-    var need = [['firstFind', 9], ['goTo', 10], ['related', 13], ['dateFreq', 14]];
+    var need = [['firstFind', 9], ['goTo', 10], ['dateFreq', 13]];
     for (var i = 0; i < need.length; i++) if (!S[need[i][0]]) return 'Pick an answer for question ' + need[i][1] + '. There is no wrong one.';
     return '';
   }
@@ -215,7 +214,7 @@
     }).join('') : '<p class="hint" style="margin-left:0">Pick at least one kind of file above and its row shows up here.</p>';
     var rec = '';
     if (S.types.recording.on) {
-      rec = q(17, 'How do you record things?', 'So a Zoom recording and a screen recording never look alike.', '<div class="opts two">' +
+      rec = q(16, 'How do you record things?', 'So a Zoom recording and a screen recording never look alike.', '<div class="opts two">' +
         [['zoom', 'Zoom'], ['screen-capture', 'Screen capture'], ['phone', 'Phone'], ['other', 'Something else']].map(function (r) { return checkArr('recSources', r[0], r[1]); }).join('') + '</div>' +
         (S.recSources.indexOf('other') > -1 ? '<div style="margin-top:10px">' + textIn('recOther', 'recOther', 'one word, like loom', true) + '</div>' : ''));
     }
@@ -223,21 +222,21 @@
     var chips = starter.map(function (t) {
       return '<label class="chip"><input type="checkbox" id="tp-' + t + '" data-topic-toggle="' + t + '"' + (S.topics.indexOf(t) > -1 ? ' checked' : '') + '><span>' + esc(t) + '</span></label>';
     }).join('');
-    return q(15, 'Which of these kinds of files do you have?', 'Pick every kind you have. Ebook means something you read. Workbook means something you fill in.', fams) +
-      q(16, 'For each one, keep my word or teach me yours.', 'Your word becomes the type word in your names. Leave it empty to keep mine.', rows) +
+    return q(14, 'Which of these kinds of files do you have?', 'Pick every kind you have. Ebook means something you read. Workbook means something you fill in.', fams) +
+      q(15, 'For each one, keep my word or teach me yours.', 'Your word becomes the type word in your names. Leave it empty to keep mine.', rows) +
       rec +
-      q(18, 'What are your top 10 search words?', 'Pick from the starter list or add your own. These become your topic words.',
+      q(17, 'What are your top 10 search words?', 'Pick from the starter list or add your own. These become your topic words.',
         '<div class="chips" id="topicChips">' + chips + '</div><div class="addrow"><input type="text" id="customTopic" data-bind-text="customTopic" placeholder="Add your own word" autocomplete="off" spellcheck="false" aria-label="Add your own search word"><button type="button" class="btn ghost small" data-act="add-topic">Add</button></div><div class="count" id="topicCount" aria-live="polite"></div>') +
-      q(19, 'Missing a file type?', 'Describe it and your agent will suggest a name. Nothing becomes official until you say yes.',
+      q(18, 'Missing a file type?', 'Describe it and your agent will suggest a name. Nothing becomes official until you say yes.',
         '<textarea id="missing" data-bind-text="missing" placeholder="For example: the little PDFs I send after a discovery call">' + esc(S.missing) + '</textarea>');
   }
   function c5() {
     var keys = selectedKeys();
-    if (!keys.length) return 'Pick at least one kind of file (question 15).';
+    if (!keys.length) return 'Pick at least one kind of file (question 14).';
     for (var i = 0; i < keys.length; i++) { var m = wordMsg(keys[i]); if (m) return D.TYPE[keys[i]].label + ': ' + m; }
     if (S.types.recording.on) {
-      if (!S.recSources.length) return 'Pick at least one way you record (question 17).';
-      if (S.recSources.indexOf('other') > -1 && !N.slug(S.recOther)) return 'Type your other recording source (question 17).';
+      if (!S.recSources.length) return 'Pick at least one way you record (question 16).';
+      if (S.recSources.indexOf('other') > -1 && !N.slug(S.recOther)) return 'Type your other recording source (question 16).';
     }
     return '';
   }
@@ -251,9 +250,9 @@
       return '<div class="trow"><div><b>' + esc(t.label) + '</b></div><select id="dov-' + k + '" data-dov="' + k + '" aria-label="Date placement for ' + esc(t.label) + '">' + opts + '</select></div>';
     }).join('') : '<p class="hint" style="margin-left:0">Pick your kinds of files on the last screen and they show up here.</p>';
     return '<p class="sub" style="margin-top:18px">A little naming magic, zero guesswork. Some rules stay consistent for everyone: lowercase, two hyphens between fields, a type word, a title, and version numbers for files that have versions.</p>' +
-      q(20, 'Date in the name?', 'Your default is set from the last screen. Change it for any kind of file here.', rows) +
-      q(21, 'Add the city for in-person events?', null, grp([radio('city', 'yes', 'Yes, add the city'), radio('city', 'no', 'No')], true)) +
-      q(22, 'Mark your approved version with final?', 'Only the latest approved version carries it. When a newer one is approved, the older file keeps its vNN and loses final.',
+      q(19, 'Date in the name?', 'Your default is set from the last screen. Change it for any kind of file here.', rows) +
+      q(20, 'Add the city for in-person events?', null, grp([radio('city', 'yes', 'Yes, add the city'), radio('city', 'no', 'No')], true)) +
+      q(21, 'Mark your approved version with final?', 'Only the latest approved version carries it. When a newer one is approved, the older file keeps its vNN and loses final.',
         grp([radio('final', 'yes', 'Yes, mark it', 'workbook--leadership--v03--final.pdf'), radio('final', 'no', 'No, versions only', 'workbook--leadership--v03.pdf')]));
   }
 
@@ -261,11 +260,16 @@
   var NEED = { version: 'version number?', type: 'kind of file?', source: 'Zoom, screen capture or phone?', topic: 'topic?', date: 'date?' };
   function tdOne(i) { return N.parseOld(S.testNames[i], S, S.testOv[i]); }
   function hitsHtml(i, r) {
-    var hs = N.searchHits(r.name, S.testSearch[i]);
+    var hs = N.searchHits(r, S.testSearch[i]);
     if (!hs.length) return '';
     var miss = hs.filter(function (h) { return !h.hit; });
     var h = '<div class="hits">' + hs.map(function (x) { return '<span class="hit ' + (x.hit ? 'y' : 'n') + '">' + esc(x.w) + (x.hit ? ' found' : ' not in the name') + '</span>'; }).join('') + '</div>';
-    if (miss.length) h += '<div class="msg">Those words are not all in the new name. <button type="button" class="btn ghost small" data-td-usetopic="' + i + '|' + esc(miss[0].w) + '">Use "' + esc(miss[0].w) + '" as the topic</button></div>';
+    if (miss.length) {
+      var m0 = miss[0], btn = '';
+      if (m0.typeKey) btn = ' <button type="button" class="btn ghost small" data-td-kind="' + i + '|' + m0.typeKey + '">Use "' + esc(D.TYPE[m0.typeKey].label) + '" as the kind of file</button>';
+      else if (!m0.noAuthor) btn = ' <button type="button" class="btn ghost small" data-td-usetopic="' + i + '|' + esc(m0.w) + '">Use "' + esc(m0.w) + '" as the topic</button>';
+      h += '<div class="msg">Those words are not all in the new name.' + btn + '</div>';
+    }
     else h += '<div class="okmsg" style="margin-top:8px;font-size:14px">Every word you would search for is in the name.</div>';
     return h;
   }
@@ -277,7 +281,8 @@
     var r = tdOne(i); if (!r) return '';
     var tw = S.testOk[i] === 'tweak';
     var typeSel = '<select id="tdt-' + i + '" data-td-type="' + i + '" aria-label="Kind of file for example ' + (i + 1) + '"><option value="">Let the agent decide</option>' + D.TYPES.map(function (t) { return '<option value="' + t.key + '"' + ((S.testOv[i].key === t.key) ? ' selected' : '') + '>' + esc(t.label) + '</option>'; }).join('') + '</select>';
-    return '<div class="td"><div class="before">' + esc(r.raw) + '</div><div class="nm" id="tdnm-' + i + '">' + partsHtml(r.parts, r.ext) + '</div><div class="pills" id="tdp-' + i + '">' + pillsHtml(r) + '</div>' +
+    var kindQ = (r.authorSpotted && !r.key) ? '<div class="note" style="margin-top:12px">I spotted an author and a title. <b>' + esc(r.author) + '</b> looks like the author. What kind of file is it?<div class="seg-btns" style="margin-top:10px"><button type="button" class="btn small ghost" data-td-kind="' + i + '|ebook">Ebook (a book you read)</button><button type="button" class="btn small ghost" data-td-kind="' + i + '|book">Book</button><button type="button" class="btn small ghost" data-td-kind="' + i + '|journal">Journal</button><button type="button" class="btn small ghost" data-td-kind="' + i + '|else">Something else</button></div></div>' : '';
+    return '<div class="td"><div class="before">' + esc(r.raw) + '</div><div class="nm" id="tdnm-' + i + '">' + partsHtml(r.parts, r.ext) + '</div><div class="pills" id="tdp-' + i + '">' + pillsHtml(r) + '</div>' + kindQ +
       '<label class="f" for="ts-' + i + '" style="margin-top:14px">Type the words you would naturally search for to find this file</label><input type="text" id="ts-' + i + '" data-td-search="' + i + '" value="' + esc(S.testSearch[i]) + '" placeholder="for example: leadership workbook" autocomplete="off"><div id="hits-' + i + '">' + hitsHtml(i, r) + '</div>' +
       '<div class="seg-btns"><button type="button" class="btn small' + (S.testOk[i] === 'ok' ? '' : ' ghost') + '" data-td-ok="' + i + '|ok">Looks right</button><button type="button" class="btn small' + (tw ? '' : ' ghost') + '" data-td-ok="' + i + '|tweak">Needs a tweak</button></div>' +
       (tw ? '<div class="grid2"><div><label class="f" for="tdt-' + i + '">Kind of file</label>' + typeSel + '</div><div><label class="f" for="tdo-' + i + '">Topic</label><input type="text" id="tdo-' + i + '" class="mono-in" data-td-topic="' + i + '" value="' + esc(S.testOv[i].topic || '') + '" placeholder="one topic word" autocomplete="off"></div></div>' : '') + '</div>';
@@ -287,28 +292,13 @@
     return h || '<p class="hint" style="margin-left:0">Paste a name above and its makeover shows up here.</p>';
   }
   function s7() {
-    return q(23, 'Paste three real file names.', 'For each one you will see BEFORE and AFTER. Then type the words you would naturally search for. Nothing gets renamed during the test drive.',
+    return q(22, 'Paste three real file names.', 'For each one you will see BEFORE and AFTER. Then type the words you would naturally search for. Nothing gets renamed during the test drive.',
       [0, 1, 2].map(function (i) { return '<div style="margin-bottom:10px"><label class="f" for="tn-' + i + '">File name ' + (i + 1) + '</label><input type="text" id="tn-' + i + '" class="mono-in" data-td-name="' + i + '" value="' + esc(S.testNames[i]) + '" placeholder="Paste a file name, extension included" autocomplete="off" spellcheck="false"></div>'; }).join('') +
       '<button type="button" class="btn ghost small" data-act="td-examples">Try three messy examples</button><div id="tdResults">' + tdAll() + '</div>' +
       '<div class="note"><b>This is a name-only preview.</b> Your agent opens each file and reads it before it names it, so real titles, dates and authors come from the inside. Anything marked with a dashed outline is something it would ask you.</div>');
   }
 
   /* ---------- download screen ---------- */
-  function gateHtml() {
-    var r = gateCache;
-    var inner = '';
-    if (r) {
-      var pr = Math.min(100, r.renamed), pd = Math.min(7, r.days);
-      inner = '<div class="meter"><div class="lbl"><span>Renames logged</span><span>' + r.renamed + ' of 100</span></div><div class="trk"><i style="width:' + pr + '%"></i></div></div>' +
-        '<div class="meter"><div class="lbl"><span>Days between first and last</span><span>' + r.days + ' of 7</span></div><div class="trk"><i style="width:' + Math.round(pd / 7 * 100) + '%"></i></div></div>';
-      if (r.unlocked) {
-        inner += '<p class="okmsg" style="margin-top:12px">Unlocked. Your sidekick earned its stripes.</p><p class="hint" style="margin-left:0">Paste this to your agent to start the setup conversation. The agent confirms the folder and the schedule with you first.</p><div class="cta"><button type="button" class="btn small" data-act="copy-overnight">Copy the message</button></div>';
-      } else {
-        inner += '<p class="msg">Still locked. ' + (r.renamed < 100 ? (100 - r.renamed) + ' more renames' : '') + (r.renamed < 100 && r.days < 7 ? ' and ' : '') + (r.days < 7 ? (7 - r.days) + ' more days' : '') + ' to go.</p>';
-      }
-    }
-    return inner;
-  }
   function s8() {
     var c = P.ctx(S), keys = selectedKeys();
     PKG = P.build(S);
@@ -320,12 +310,9 @@
       '<div><small>Runs in</small><b>' + esc(c.ai) + '</b></div><div><small>Files live in</small><b>' + esc(c.where) + '</b></div><div><small>Main folder</small><b>' + esc(c.folder) + '</b></div>' +
       '<div><small>Trash helper</small><b>' + (S.del === 'yes' && S.delNames.length ? 'On, always asks' : 'Off') + '</b></div><div><small>File types</small><b>' + keys.length + ' chosen</b></div><div><small>Topic words</small><b>' + S.topics.length + ' chosen</b></div></div>' +
       '<div class="note" style="margin-top:12px"><b>Your name pattern</b><br><span class="mono" style="font-size:14px;color:var(--gold-hi);overflow-wrap:anywhere">' + esc(c.pattern) + '</span></div>' +
-      q(24, 'Pick a small practice folder of 10 to 20 files.', 'Your agent starts there. Type the folder name, or leave it and I\'ll call it practice-folder.', textIn('practice', 'practice', 'practice-folder', true)) +
+      q(23, 'Pick a small practice folder of 10 to 20 files.', 'Your agent starts there. Type the folder name, or leave it and I\'ll call it practice-folder.', textIn('practice', 'practice', 'practice-folder', true)) +
       '<section class="q"><h3 class="qt" style="max-width:none">Your 16-file agent package</h3><div class="cta" style="margin-top:12px"><button type="button" class="btn" id="dlBtn" data-act="download">Get my agent (.zip)</button><button type="button" class="btn ghost" data-act="copy-instr">Copy the agent instructions</button></div><div class="msg" id="dlMsg" role="status"></div>' +
-      '<div class="files" id="files">' + files + '</div></section>' +
-      '<div class="locked"><h3>Overnight mode</h3><p class="sub" style="margin-top:6px;font-size:16px">First, let\'s make sure your sidekick has earned its stripes. Your agent starts in supervised mode, and you approve renames before they happen. Paste your rename log to check your progress. Unlocking takes 100 completed renames and at least 7 days between the first and last logged rename.</p>' +
-      '<label class="f" for="logPaste" style="margin-top:14px">Paste your rename log</label><textarea id="logPaste" class="mono-in" data-bind-text="logPaste" placeholder="| date | old name | new name | status | note |">' + esc(S.logPaste) + '</textarea>' +
-      '<div class="cta"><button type="button" class="btn ghost small" data-act="check-log">Check my log</button></div><div id="gate">' + gateHtml() + '</div></div>';
+      '<div class="files" id="files">' + files + '</div></section>';
   }
 
   var SCREENS = [
@@ -491,19 +478,14 @@
     else if (act === 'back') go(-1);
     else if (act === 'reset') {
       if (!resetArmed) { resetArmed = true; t.textContent = 'Click again to clear every answer'; setTimeout(function () { resetArmed = false; var rb = $('resetBtn'); if (rb) rb.textContent = 'Start over'; }, 4000); }
-      else { resetArmed = false; S = fresh(); try { localStorage.removeItem(STORE); } catch (x) { /* ignore */ } gateCache = null; render(true); t.textContent = 'Start over'; }
+      else { resetArmed = false; S = fresh(); try { localStorage.removeItem(STORE); } catch (x) { /* ignore */ } render(true); t.textContent = 'Start over'; }
     }
     else if (act === 'td-examples') { S.testNames = D.SAMPLE_NAMES.slice(0, 3); S.testOv = [{}, {}, {}]; S.testOk = ['', '', '']; save(); render(); }
     else if (act === 'add-topic') addTopic();
-    else if (act === 'check-log') { gateCache = N.parseLog(S.logPaste); var g = $('gate'); if (g) g.innerHTML = gateHtml(); }
     else if (act === 'download') download();
     else if (act === 'copy-instr') {
       var ins = PKG.filter(function (f) { return f.path === 'core/agent-instructions.md'; })[0];
       copyText(ins.content, function (ok) { setMsg(ok ? 'Copied. Paste it into your project instructions.' : 'Copy was blocked here. Open the file below, select the text and copy it.'); });
-    }
-    else if (act === 'copy-overnight') {
-      var r = gateCache || { renamed: 0, days: 0 };
-      copyText('Set up overnight renaming. My rename log shows ' + r.renamed + ' renames across ' + r.days + ' days. Confirm the folder and the schedule with me before you start, and tell me honestly whether this connection supports scheduled tasks.', function (ok) { t.textContent = ok ? 'Copied' : 'Copy was blocked here'; });
     }
     else if (t.hasAttribute('data-copy')) {
       var f = PKG[+t.getAttribute('data-copy')];
@@ -511,6 +493,11 @@
     }
     else if (t.hasAttribute('data-td-ok')) {
       var p = t.getAttribute('data-td-ok').split('|'); S.testOk[+p[0]] = p[1]; save(); $('tdResults').innerHTML = tdAll();
+    }
+    else if (t.hasAttribute('data-td-kind')) {
+      var kp = t.getAttribute('data-td-kind').split('|'), ki = +kp[0];
+      if (kp[1] === 'else') S.testOk[ki] = 'tweak'; else S.testOv[ki].key = kp[1];
+      save(); $('tdResults').innerHTML = tdAll();
     }
     else if (t.hasAttribute('data-td-usetopic')) {
       var q2 = t.getAttribute('data-td-usetopic').split('|'), ix = +q2[0]; S.testOv[ix].topic = q2[1]; S.testOk[ix] = 'tweak'; save(); $('tdResults').innerHTML = tdAll();

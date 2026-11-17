@@ -142,10 +142,6 @@
       '## 6. Undo, if you want',
       '',
       'Say §undo the last batch§. The agent reads the rename log, shows you what it will put back, and waits for your yes.',
-      '',
-      '## 7. Overnight renaming',
-      '',
-      'It stays locked until your rename log shows 100 renames across at least 7 days. When you get there, paste the log into the agent and ask for overnight mode.'
     ].join('\n'));
   }
 
@@ -156,7 +152,7 @@
       '1. Rename only. Change the filename stem and nothing else. The extension, the contents and the location stay exactly as they are.',
       '2. Never move, copy, edit, merge, share or publish a file or a folder.',
       on
-        ? '3. Never delete anything on your own. Only a file whose whole name before the extension is ' + (S.delNames.length === 1 ? '' : 'one of ') + joinOr(S.delNames) + ' may be offered for the trash, and only after you list it and ' + c.who + ' says yes in this conversation. The word delete inside a longer title never counts. Use the trash, never permanent deletion. Never do this overnight.'
+        ? '3. Never delete anything on your own. Only a file whose whole name before the extension is ' + (S.delNames.length === 1 ? '' : 'one of ') + joinOr(S.delNames) + ' may be offered for the trash, and only after you list it and ' + c.who + ' says yes in this conversation. The word delete inside a longer title never counts. Use the trash, never permanent deletion.'
         : '3. Never delete or trash anything, whatever a file is named.',
       '4. Folders keep their names unless ' + c.who + ' names a specific folder and asks you to rename it. Then follow the folder rename steps in workflow.md. A file named readme.md always keeps that name.',
       '5. Work only in the folder ' + c.who + ' names for this session. Start with the practice folder.',
@@ -232,7 +228,6 @@
       '',
       '- The last file ' + c.who + ' went looking for was found by: ' + L.firstFind[S.firstFind] + '.',
       '- Day to day, ' + c.who + ' ' + L.goTo[S.goTo] + '.',
-      '- ' + c.who + ' ' + L.related[S.related] + '.' + (S.related === 'yes' ? ' Use the same topic word everywhere so one search finds everything connected.' : ''),
       '- Searches by date: ' + L.dateFreq[S.dateFreq] + '.',
       '- Who uses these files: ' + accessText(S, c) + '.' + (S.access === 'team' ? ' Use clear, everyday words with no secret codes.' : ''),
       '',
@@ -248,10 +243,6 @@
       '- Rename logs and registry versions: §' + c.log + '§.',
       '- Knowledge files: buyer-profile.md, knowledge.md, naming-registry.md, workflow.md.',
       '- When anything disagrees, naming-registry.md wins.',
-      '',
-      '## Overnight mode',
-      '',
-      'Locked. Do not offer or run scheduled renaming until ' + c.who + ' pastes a rename log with at least 100 rows marked §renamed§ that span at least 7 days. Even then: overnight renames follow every rule above, unreadable files stay in place and go in the log, and nothing is ever trashed overnight.',
       '',
       '## How you write',
       '',
@@ -324,7 +315,7 @@
       '|---|---|---|---|---|',
       '| ' + c.date + ' | example old name.pdf | guide--ai--example-title.pdf | renamed | |',
       '',
-      'Status is one of: §renamed§, §held§, §asked§, §failed§, §undone§. Only §renamed§ rows count toward overnight mode. If you cannot create files on this connection, print the log in the chat and ask ' + c.who + ' to save it.',
+      'Status is one of: §renamed§, §held§, §asked§, §failed§, §undone§. If you cannot create files on this connection, print the log in the chat and ask ' + c.who + ' to save it.',
       '',
       '## Step 10: update the registry',
       '',
@@ -353,16 +344,8 @@
       '- Same work in another format: same stem, different extension.',
       '- Title conflict: when the printed title is plainly an error because the body is a different work, hold the file and ask.',
       '- Unknown file kinds: hold them and list them. Never rename into a different format.',
+      '- Old names from before the double-hyphen style, such as §Martha Beck -Five Paths To Your Purpose.pdf§: treat a person\'s name next to a title as an author and a title, then read the file and ask which kind it is (ebook, book, journal or something else) before you propose a name. Example result: §ebook--purpose--five-paths-to-your-purpose--martha-beck--yyyy-mm-dd.pdf§ with the date asked for.',
       delOn(S) ? '- Delete-named files: list them in a separate table titled "Offered for the trash", ask once, and only trash after a clear yes. Never permanent deletion.' : '- Nothing is ever trashed.',
-      '',
-      '## Overnight mode (locked)',
-      '',
-      'It unlocks only after ' + c.who + ' pastes a rename log with at least 100 §renamed§ rows spanning at least 7 days between the first and last row. Then:',
-      '',
-      '1. Confirm the folder and the schedule with ' + c.who + '.',
-      '2. Set it up only if this connection supports scheduled tasks. If it does not, say so and keep working in supervised sessions.',
-      '3. Overnight runs rename only, follow every rule, leave unreadable and unsure files in place, never trash anything, and write a log.',
-      '4. Tell ' + c.who + ' this route has not been tested by the maker, so watch the first few mornings.'
     ].join('\n'));
   }
 
@@ -391,7 +374,6 @@
       '',
       '- Last file searched for was found by: ' + L.firstFind[S.firstFind],
       '- Day to day: ' + L.goTo[S.goTo],
-      '- Related items: ' + L.related[S.related],
       '- Searches by date: ' + L.dateFreq[S.dateFreq],
       '',
       '## Naming taste',
@@ -738,7 +720,6 @@
         'Google Drive connected to the AI',
         'A practice folder with 10 to 20 files'
       ],
-      overnight_mode: { status: 'locked', unlock: { renames: 100, days_between_first_and_last: 7 }, tested: false }
     };
     return JSON.stringify(o, null, 2) + '\n';
   }
@@ -809,7 +790,6 @@
       '',
       '- The agent has not been run end to end on your files. The first session starts with a capability check.',
       '- Renaming through the Google Drive connector is not listed in the vendor help pages.',
-      '- Overnight mode is locked and untested.',
       '- LICENSE.txt is a plain-language draft awaiting lawyer review.'
     ].join('\n'));
   }
